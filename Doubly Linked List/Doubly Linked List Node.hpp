@@ -7,6 +7,10 @@ class Node
 public:
 	Node();
 	Node(T value);
+	Node(const Node& other) = delete;
+	Node& operator=(const Node& other) = delete;
+	Node(Node&& other) = delete;
+	Node& operator=(Node&& other) = delete;
 	~Node();
 
 	Node<T>* getNext();
@@ -25,20 +29,20 @@ private:
 template<typename T>
 Node<T>::Node()
 {
-	std::cout << "Default constructor called." << std::endl;
+	std::cout << "Node default constructor called.\n";
 }
 
 template<typename T>
 Node<T>::Node(T value)
 	: m_value{value}
 {
-	std::cout << "Single value constructor called with value " << value << '.' << std::endl;
+	std::cout << "Node value constructor called with value " << value << ".\n";
 }
 
 template<typename T>
 Node<T>::~Node()
 {
-	std::cout << "Node destructor called for value " << m_value << '!' << std::endl;
+	std::cout << "Node destructor called for value " << m_value << "!\n";
 }
 
 template<typename T>
@@ -70,4 +74,3 @@ void Node<T>::setPrevious(Node<T>* previous)
 {
 	m_previous = previous;
 }
-

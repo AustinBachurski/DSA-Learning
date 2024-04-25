@@ -12,6 +12,34 @@ template<typename T>
 class DoublyLinkedList
 {
 public:
+	DoublyLinkedList();
+	DoublyLinkedList(const T& value);
+	DoublyLinkedList(const std::initializer_list<T> values);
+	DoublyLinkedList(const DoublyLinkedList& other);
+	DoublyLinkedList& operator=(const DoublyLinkedList& other);
+	DoublyLinkedList(DoublyLinkedList&& other);
+	DoublyLinkedList& operator=(DoublyLinkedList&& other);
+	~DoublyLinkedList();
+	
+	[[nodiscard]] size_t length() const;
+	[[nodiscard]] size_t size() const;
+	[[nodiscard]] bool is_empty() const;
+
+	void push_back(T value);
+	void push_front(T value);
+	void insert_at(T value, size_t index);
+	void append_range(const std::initializer_list<T> values);
+	void prepend_range(const std::initializer_list<T> values);
+
+	T& operator[](size_t index);
+
+	void clear();
+	void remove_at(size_t index);
+	void pop_back();
+	void pop_front();
+	void swap(size_t a, uint64_t b);
+
+public:
 	class Iterator
 	{
 	public:
@@ -49,11 +77,6 @@ public:
 	};
 
 public:
-	DoublyLinkedList();
-	DoublyLinkedList(T value);
-	DoublyLinkedList(std::initializer_list<T> values);
-	~DoublyLinkedList();  // TODO: Rule of 5!
-	
 	Iterator begin()
 	{
 		return Iterator(m_head);
@@ -64,22 +87,15 @@ public:
 		return Iterator(nullptr);
 	}
 
-	size_t length();
-	size_t size();
+	Iterator begin() const
+	{
+		return Iterator(m_head);
+	}
 
-	void push_back(T value);
-	void push_front(T value);
-	void insert(T value, size_t index);
-	void append_range(std::initializer_list<T> values);
-	void prepend_range(std::initializer_list<T> values);
-
-	T& operator[](size_t index);
-
-	void clear();
-	void erase(size_t index);
-	void pop_back();
-	void pop_front();
-	void swap(size_t a, uint64_t b);
+	Iterator end() const
+	{
+		return Iterator(nullptr);
+	}
 
 private:
 	Node<T>* backwards_to(size_t index);
@@ -94,37 +110,99 @@ private:
 
 template<typename T>
 DoublyLinkedList<T>::DoublyLinkedList()
-{}
+{
+	std::cout << "List default constructor called.\n";
+}
 
 template<typename T>
-DoublyLinkedList<T>::DoublyLinkedList(T value)
+DoublyLinkedList<T>::DoublyLinkedList(const T& value)
 {
+	std::cout << "List constructor called with single value.\n";
 	m_head = new Node<T>(value);
 	m_tail = m_head;
 	++m_length;
 }
 
 template<typename T>
-DoublyLinkedList<T>::DoublyLinkedList(std::initializer_list<T> values)
+DoublyLinkedList<T>::DoublyLinkedList(const std::initializer_list<T> values)
 {
+	std::cout << "List constructor called with initializer list.\n";
 	append_range(values);
+}
+
+template<typename T>
+DoublyLinkedList<T>::DoublyLinkedList(const DoublyLinkedList& other)
+{
+	std::cout << "List copy constructor called.\n";
+
+	for (const auto& element : other)
+	{
+		push_back(element);
+	}
+}
+
+template<typename T>
+DoublyLinkedList<T>& DoublyLinkedList<T>::operator=(const DoublyLinkedList& other)
+{
+	std::cout << "List copy assignment called.\n";
+
+	if (this == &other) { return *this; }
+
+	clear();
+	for (const auto& element : other)
+	{
+		push_back(element);
+	}
+	return *this;
+}
+
+template<typename T>
+DoublyLinkedList<T>::DoublyLinkedList(DoublyLinkedList&& other)
+	: m_head{ other.m_head },
+	  m_length{ other.m_length },
+	  m_tail{ other.m_tail }
+{
+	std::cout << "List move constructor called.\n";
+
+	other.m_head = nullptr;
+	other.m_length = 0;
+	other.m_tail = nullptr;
+}
+
+template<typename T>
+DoublyLinkedList<T>& DoublyLinkedList<T>::operator=(DoublyLinkedList&& other)
+{
+	std::cout << "List move assignment called.\n";
+
+	if (this == &other) { return *this; }
+
+	clear();
+	m_head = other.m_head;
+	m_length = other.m_length;
+	m_tail = other.m_tail;
+
+	other.m_head = nullptr;
+	other.m_length = 0;
+	other.m_tail = nullptr;
+
+	return *this;
 }
 
 template<typename T>
 DoublyLinkedList<T>::~DoublyLinkedList()
 {
-	std::cout << "List destructor called!" << std::endl;
+	std::cout << "List destructor called!\n";
 	clear();
 }
 
 template<typename T>
-size_t DoublyLinkedList<T>::length()
+size_t DoublyLinkedList<T>::length() const
 {
 	return m_length;
 }
 
 template<typename T>
-size_t DoublyLinkedList<T>::size()
+size_t DoublyLinkedList<T>::size() const
 {
 	return length();
 }
@@ -172,7 +250,7 @@ void DoublyLinkedList<T>::push_front(T value)
 }
 
 template<typename T>
-void DoublyLinkedList<T>::insert(T value, size_t index)
+void DoublyLinkedList<T>::insert_at(T value, size_t index)
 {
 	Node<T>* target = walk_to(index);
 	
@@ -208,11 +286,20 @@ void DoublyLinkedList<T>::insert(T value, size_t index)
 }
 
 template<typename T>
-void DoublyLinkedList<T>::append_range(std::initializer_list<T> values)
+void DoublyLinkedList<T>::append_range(const std::initializer_list<T> values)
 {
 	std::for_each(values.begin(), values.end(), [this](auto value)
 		{
 			push_back(value);
+		});
+}
+
+template<typename T>
+void DoublyLinkedList<T>::prepend_range(const std::initializer_list<T> values)
+{
+	std::for_each(values.begin(), values.end(), [this](auto value)
+		{
+			push_front(value);
 		});
 }
 
@@ -294,7 +381,7 @@ void DoublyLinkedList<T>::clear()
 }
 
 template<typename T>
-void DoublyLinkedList<T>::erase(size_t index)
+void DoublyLinkedList<T>::remove_at(size_t index)
 {
 	Node<T>* target = walk_to(index);
 
@@ -387,4 +474,10 @@ Node<T>* DoublyLinkedList<T>::foward_to(size_t index)
 	}
 	
 	return current;
+}
+
+template<typename T>
+bool DoublyLinkedList<T>::is_empty() const
+{
+	return !m_length;
 }

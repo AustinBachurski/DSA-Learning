@@ -1,4 +1,4 @@
-# Playing around with Data Structures
+# Learning Data Structures
 
 Doubly Linked List is an attempt at implementing a `std::list`, strictly for learning/understanding purposes. 
 
